@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 import psutil
 
 def get_system_metrics() -> dict:
@@ -9,7 +11,10 @@ def get_system_metrics() -> dict:
     """
     cpu_percent = psutil.cpu_percent(interval=1)
     memory = psutil.virtual_memory()
-    disk = psutil.disk_usage('/')
+    disk_path = os.getenv("DISK_PATH")
+    if not disk_path:
+        disk_path = Path.home().anchor if os.name == "nt" else "/"
+    disk = psutil.disk_usage(disk_path)
     
     return {
         "cpu": {
