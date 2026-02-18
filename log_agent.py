@@ -1,40 +1,44 @@
 import os
 from dotenv import load_dotenv
-from langchain.llms import OpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain_openai import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
 
-# Load environment variables
 load_dotenv()
 
-# Initialize OpenAI with API key
-llm = OpenAI(
+_llm = ChatOpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
-    temperature=0
+    model="gpt-4o-mini",
+    temperature=0,
 )
 
-# Create prompt template
-prompt = PromptTemplate(
-    input_variables=["log_text"],
-    template="You're a DevOps agent. Analyze the following log and recommend what to do:\n\n{log_text}"
-)
+_prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        (
+            "You are a senior DevOps engineer. "
+            "Analyze the provided system log and give concise, actionable recommendations. "
+            "Identify errors, warnings, and performance issues. "
+            "Format your response with clear sections: Summary, Issues Found, and Recommended Actions."
+        ),
+    ),
+    ("human", "{log_text}"),
+])
 
-# Create chain
-chain = LLMChain(llm=llm, prompt=prompt)
+_chain = _prompt | _llm
+
 
 def analyze_log(log_text: str) -> str:
     """
     Analyze the provided log text using LangChain and OpenAI.
-    
+
     Args:
-        log_text (str): The log text to analyze
-        
+        log_text: The log text to analyze.
+
     Returns:
-        str: AI's recommended action
+        AI's recommendations as a string.
+
+    Raises:
+        Exception: Propagates any LLM or network errors to the caller.
     """
-    try:
-        # Run the chain
-        response = chain.invoke({"log_text": log_text})
-        return response["text"]
-    except Exception as e:
-        return f"Error analyzing log: {str(e)}" 
+    response = _chain.invoke({"log_text": log_text})
+    return response.content
