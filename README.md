@@ -1,4 +1,4 @@
-# ClawOps – AI DevOps Copilot
+# ClawOps
 
 An AI-powered DevOps assistant with structured execution capabilities. Analyze system logs, monitor infrastructure health, inspect Kubernetes pods and Docker containers, and trigger guarded remediations — all from a React dashboard or a terminal CLI.
 
