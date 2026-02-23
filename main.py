@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 from monitor import get_system_metrics
-from log_agent import analyze_log
+from log_agent import analyze_log, analyze_log_structured
 from log_ingest import LogIngestor
 
 log_ingestor: LogIngestor | None = None
@@ -117,3 +117,38 @@ async def analyze_latest_log():
         return {"status": "success", "recommendation": recommendation}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class StructuredLogInput(BaseModel):
+    """Request body for structured log analysis."""
+
+    log: str = Field(..., min_length=1, max_length=50_000, description="Log text to analyze")
+
+
+@app.post("/analyze-structured")
+async def analyze_structured_endpoint(log_input: StructuredLogInput):
+    """Analyze log text and return a validated, structured JSON response.
+
+    The LLM is instructed to output a strict JSON object conforming to
+    ``LLMAnalysisResponse``.  If the output fails schema validation the
+    endpoint returns HTTP 422 – it never returns unvalidated LLM text.
+
+    The ``suggested_action`` field contains a machine-readable action token
+    (one of ``restart_pod``, ``restart_container``, ``no_action``) and
+    typed parameters.  Clients may pass this response to the action router
+    (``POST /execute-action``) to trigger a guarded execution.
+    """
+    try:
+        result = analyze_log_structured(log_input.log)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if result is None:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "LLM output did not conform to the required JSON schema. "
+                "No action has been taken."
+            ),
+        )
+    return {"status": "success", "analysis": result.model_dump()}

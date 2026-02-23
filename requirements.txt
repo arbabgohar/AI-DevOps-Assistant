@@ -1,7 +1,27 @@
+# ── Web / API ─────────────────────────────────────────────────────────────────
 fastapi==0.109.2
 uvicorn==0.27.1
-psutil==5.9.8
+
+# ── AI / LLM ──────────────────────────────────────────────────────────────────
 openai==1.12.0
 langchain==0.1.9
 langchain-openai==0.0.8
+
+# ── System monitoring ─────────────────────────────────────────────────────────
+psutil==5.9.8
+
+# ── Config ────────────────────────────────────────────────────────────────────
 python-dotenv==1.0.1
+
+# ── CLI (new) ─────────────────────────────────────────────────────────────────
+# typer[all] pulls in rich (pretty tables/panels) and shellingham (shell detection).
+typer[all]>=0.12.0
+
+# ── Kubernetes plugin (new) ───────────────────────────────────────────────────
+# Official Kubernetes Python client. Tested against clusters ≥ 1.26.
+# Namespace-scoped RBAC is sufficient; cluster-admin is NOT required.
+kubernetes>=28.1.0
+
+# ── Docker plugin (new) ───────────────────────────────────────────────────────
+# Official Docker SDK for Python.
+docker>=7.0.0
